@@ -3,7 +3,7 @@ import { Button, Form, Table, Pagination } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import '../dist/css/Karyawan.css';
+import '../style/css/Karyawan.css';
 
 function KaryawanPage() {
   const [searchTerm, setSearchTerm] = useState('');

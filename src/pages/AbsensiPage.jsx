@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Table, Button, Pagination } from 'react-bootstrap';
-import '../dist/css/Absensi.css';
+import '../style/css/Absensi.css';
 
 // Contoh data absensi
 const data = [

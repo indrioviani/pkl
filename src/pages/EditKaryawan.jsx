@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import Swal from 'sweetalert2'; // Import SweetAlert2
-import '../dist/css/TambahKaryawan.css';
+import '../style/css/TambahKaryawan.css';
 
 function EditKaryawan() {
   const [formData, setFormData] = useState({

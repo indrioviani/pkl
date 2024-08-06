@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaBars, FaSignOutAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2'; // Import SweetAlert2
-import '../dist/css/Navbar.css';
+import '../style/css/Navbar.css';
 
 const NavbarComponent = ({ toggleSidebar }) => {
     const handleLogout = () => {

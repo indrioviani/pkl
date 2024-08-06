@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTachometerAlt, faUsers, faClock, faUserTimes, faClipboard } from '@fortawesome/free-solid-svg-icons';
 import AbsenImage from '../assets/img/absen.png';
-import '../dist/css/Sidebar.css';
+import '../style/css/Sidebar.css';
 
 const SidebarComponent = ({ isOpen }) => {
     return (

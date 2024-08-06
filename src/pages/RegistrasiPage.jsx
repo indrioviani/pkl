@@ -3,7 +3,7 @@ import Table from 'react-bootstrap/Table';
 import Pagination from 'react-bootstrap/Pagination';
 import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom';
-import '../dist/css/Registrasi.css';
+import '../style/css/Registrasi.css';
 
 const data = [
   { id: 1, rfid: 'Mark', scanTime: 'Otto' },

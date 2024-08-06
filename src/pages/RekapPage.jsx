@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Table, Pagination } from 'react-bootstrap';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import '../dist/css/Rekap.css';
+import '../style/css/Rekap.css';
 import { FaCalendarAlt } from 'react-icons/fa';
 
 function RekapPage() {

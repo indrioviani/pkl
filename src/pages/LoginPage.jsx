@@ -1,6 +1,6 @@
 import React from 'react';
 import AbsenImage from '../assets/img/absen.png';
-import '../dist/css/Login.css';
+import '../style/css/Login.css';
 
  // Pastikan untuk mengganti path dengan path gambar yang benar
 

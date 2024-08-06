@@ -2,7 +2,7 @@ import React from 'react';
 import { FaChartBar, FaUsers, FaUserAltSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import ReactApexChart from 'react-apexcharts';
-import '../dist/css/App.css'; // Pastikan Anda mengimpor file CSS
+import '../style/css/App.css'; // Pastikan Anda mengimpor file CSS
 
 const DashboardPage = () => {
   const navigate = useNavigate(); // Hook untuk navigasi
