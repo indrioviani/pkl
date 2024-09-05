@@ -9,7 +9,13 @@
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Jarak antar elemen */
+    margin-bottom: 20px;
+  }
+  
 /* Judul halaman */
 h1 {
     margin-bottom: 20px;
@@ -124,18 +130,7 @@ h1 {
         font-size: 0.9rem;
     }
 
-    .pagination {
-        flex-direction: column;
-    }
-
-    .pagination .page-item {
-        margin: 3px 0;
-    }
-
-    .pagination .page-link {
-        padding: 6px;
-        font-size: 0.9rem;
-    }
+    
 }
 
 @media (max-width: 480px) {
@@ -162,6 +157,24 @@ h1 {
         padding: 4px;
         font-size: 0.8rem;
     }
+    .pagination-container {
+    margin-top: 10px;
+    flex-direction: row; /* Ensure buttons stay in one line */
+    flex-wrap: nowrap; /* Prevent line wrapping */
+}
 
 }
 
+
+/* Responsif untuk pagination */
+@media (max-width: 768px) {
+  .pagination-container {
+      justify-content: center;
+  }
+
+  .pagination-container .pagination {
+      flex-direction: row;
+      flex-wrap: nowrap; /* Prevent line wrapping */
+      overflow-x: auto; /* Allow horizontal scrolling if needed */
+  }
+}

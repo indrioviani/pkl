@@ -25,7 +25,7 @@ const data = [
   // Your existing data array
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 function RegistrasiPage() {
   const [searchTerm, setSearchTerm] = useState('');

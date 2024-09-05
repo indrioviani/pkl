@@ -1,133 +1,198 @@
-import React, { useState } from 'react';
-import { Form, Button, Table, Pagination } from 'react-bootstrap';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import '../style/css/Rekap.css';
-import { FaCalendarAlt } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import axios from '../api/axios';
+import { Table, Pagination, Button, Form } from 'react-bootstrap';
+import Swal from 'sweetalert2';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import moment from 'moment';
+import * as XLSX from 'xlsx'; // Import library xlsx
+import '../style/css/Rekap.css'; // Perbarui import CSS
 
 function RekapPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [karyawan, setKaryawan] = useState([]);
+  const [absensi, setAbsensi] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState(''); // State untuk pencarian
+  const [filteredKaryawan, setFilteredKaryawan] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null); // State untuk tanggal
 
-  const data = [
-    { id: 1, rfid: '123456789', nama: 'John Doe', waktuMasuk: '08:00', waktuKeluar: '17:00' },
-    { id: 2, rfid: '987654321', nama: 'Jane Smith', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 3, rfid: '987654322', nama: 'Alice Johnson', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 4, rfid: '987654323', nama: 'Bob Brown', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 5, rfid: '987654324', nama: 'Charlie Davis', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 6, rfid: '987654325', nama: 'David Evans', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 7, rfid: '987654326', nama: 'Eve Foster', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 8, rfid: '987654327', nama: 'Frank Green', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 9, rfid: '987654328', nama: 'Grace Harris', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 10, rfid: '987654329', nama: 'Henry Ivers', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 11, rfid: '987654330', nama: 'Ivy Johnson', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 12, rfid: '987654331', nama: 'Jack King', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 13, rfid: '987654332', nama: 'Kelly Lee', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 14, rfid: '987654333', nama: 'Liam Moore', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    { id: 15, rfid: '987654334', nama: 'Mia Nelson', waktuMasuk: '08:15', waktuKeluar: '17:15' },
-    // Tambahkan data lainnya sesuai kebutuhan
-  ];
+  useEffect(() => {
+    // Ambil data karyawan dari API
+    axios.get('/api/user')
+      .then(response => {
+        setKaryawan(response.data);
+        setFilteredKaryawan(response.data); // Set filteredKaryawan saat data karyawan didapat
+      });
+
+    // Ambil data absensi berdasarkan tanggal yang dipilih
+    const fetchData = async () => {
+      try {
+        const date = selectedDate ? moment(selectedDate).format('Y-M-D') : '';
+        const response = await axios.get('/api/absensi/rekap', {
+          params: { date }
+        });
+        setAbsensi(response.data);
+      } catch (error) {
+        console.error('Error fetching absensi data:', error);
+      }
+    };
+
+    fetchData();
+  }, [selectedDate]); // tambahkan selectedDate sebagai dependency
+
+  useEffect(() => {
+    // Filter karyawan berdasarkan searchTerm
+    setFilteredKaryawan(
+      karyawan.filter((item) =>
+        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+    setCurrentPage(1); // Reset halaman ke 1 setiap kali ada pencarian baru
+  }, [searchTerm, karyawan]);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset halaman ke 1 setiap kali ada pencarian baru
   };
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-    setShowCalendar(false);
+  const handleAbsenMasuk = async (userId) => {
+    try {
+      const response = await axios.post('/api/absen-masuk', { user_id: userId });
+      setAbsensi([...absensi, response.data]);
+      Swal.fire(
+        'Berhasil',
+        'Absen masuk berhasil dicatat',
+        'success'
+      );
+    } catch (error) {
+      Swal.fire(
+        'Gagal!',
+        'Terjadi kesalahan saat mencatat absen masuk.',
+        'error'
+      );
+    }
   };
+
+  const handleAbsenPulang = async (userId) => {
+    try {
+      const response = await axios.post('/api/absen-pulang', { user_id: userId });
+      const updatedAbsensi = absensi.map((item) =>
+        item.id === response.data.id ? response.data : item
+      );
+      setAbsensi(updatedAbsensi);
+      Swal.fire(
+        'Berhasil',
+        'Absen pulang berhasil dicatat',
+        'success'
+      );
+    } catch (error) {
+      Swal.fire(
+        'Gagal!',
+        'Terjadi kesalahan saat mencatat absen pulang.',
+        'error'
+      );
+    }
+  };
+
+  // Filter absensi berdasarkan tanggal yang dipilih
+  const filteredAbsensi = selectedDate ? absensi.filter(item =>
+    moment(item.jam_masuk).format('Y-M-D') === moment(selectedDate).format('Y-M-D')
+  ) : absensi;
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredKaryawan.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredKaryawan.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleDownload = () => {
-    alert('Download rekap Excel');
+    // Siapkan data untuk di-download
+    const data = filteredAbsensi.map(item => ({
+      ID: item.user_id,
+      Nama: karyawan.find(k => k.id === item.user_id)?.nama || '-',
+      Tanggal: item.jam_masuk ? moment(item.jam_masuk).format('Y-M-D') : '-',
+      Jam_Masuk: item.jam_masuk ? moment(item.jam_masuk).format('HH:mm:ss') : '-',
+      Jam_Pulang: item.jam_pulang ? moment(item.jam_pulang).format('HH:mm:ss') : '-'
+    }));
+
+    // Convert data to a worksheet
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Rekap Absensi');
+
+    // Generate buffer and create download link
+    XLSX.writeFile(workbook, `Rekap_Absensi_${moment().format('Y-M-D')}.xlsx`);
   };
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const filteredData = data.filter((item) =>
-    item.nama.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const sortedData = searchTerm ? filteredData : filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
-    <div className="rekap-page">
-      <h1>Rekap Absen</h1>
-      <div className="header">
+    <div className='rekap-page'>
+      <h1>Rekap Karyawan</h1>
+      <div className="controls">
         <Form.Control
           type="text"
-          placeholder="Search..."
+          placeholder="Search by name..."
           className="search-input"
           value={searchTerm}
           onChange={handleSearchChange}
         />
-        <Button variant="primary" className="search-button">
-          Search
-        </Button>
-        <div className="calendar-container">
-          <Button
-            variant="light"
-            className="calendar-button"
-            onClick={() => setShowCalendar(!showCalendar)}
-          >
-            <FaCalendarAlt /> Kalender
-          </Button>
-          {showCalendar && (
-            <div className="calendar-popup">
-              <Calendar
-                onChange={handleDateChange}
-                value={selectedDate}
-              />
-            </div>
-          )}
-        </div>
-        <Button variant="success" className="download-button" onClick={handleDownload}>
-          Download Rekap Excel
+        <DatePicker
+          selected={selectedDate}
+          onChange={(date) => setSelectedDate(date)}
+          className="date-picker"
+          dateFormat="yyyy-MM-dd"
+          placeholderText="Select date"
+        />
+        <Button variant="primary" className="search-button" onClick={handleDownload}>
+          Download Rekap
         </Button>
       </div>
       <Table striped bordered hover className="rekap-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>RFID Tag</th>
             <th>Nama</th>
-            <th>Waktu Masuk</th>
-            <th>Waktu Keluar</th>
+            <th>Tanggal</th>
+            <th>Jam Masuk</th>
+            <th>Jam Pulang</th>
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((item) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td>{item.rfid}</td>
-              <td>{item.nama}</td>
-              <td>{item.waktuMasuk}</td>
-              <td>{item.waktuKeluar}</td>
-            </tr>
-          ))}
+          {currentItems.map((karyawan) => {
+            const karyawanAbsensi = filteredAbsensi.find(item => item.user_id === karyawan.id);
+            return (
+              <tr key={karyawan.id}>
+                <td>{karyawan.id}</td>
+                <td>{karyawan.nama}</td>
+                <td>
+                  {karyawanAbsensi ? moment(karyawanAbsensi.jam_masuk).format('Y-M-D') : '-'}
+                </td>
+                <td>
+                  {karyawanAbsensi ? moment(karyawanAbsensi.jam_masuk).format('HH:mm:ss') : '-'}
+                </td>
+                <td>
+                  {karyawanAbsensi ? moment(karyawanAbsensi.jam_pulang).format('HH:mm:ss') : '-'}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
-      <Pagination>
-        {Array.from({ length: totalPages }, (_, i) => (
+      <Pagination className="pagination-container">
+        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+        {[...Array(totalPages).keys()].map((number) => (
           <Pagination.Item
-            key={i + 1}
-            active={i + 1 === currentPage}
-            onClick={() => handlePageChange(i + 1)}
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => paginate(number + 1)}
           >
-            {i + 1}
+            {number + 1}
           </Pagination.Item>
         ))}
+        <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
       </Pagination>
     </div>
   );

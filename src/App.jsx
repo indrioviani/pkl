@@ -10,6 +10,8 @@ import RekapPage from './pages/RekapPage';
 import TambahKaryawan from './pages/TambahKaryawan';
 import EditKaryawan from './pages/EditKaryawan';
 import LoginPage from './pages/LoginPage';
+import PengajuanPage from './pages/PengajuanPage';
+import UserProfile from './pages/UserProfile'; // Import UserProfile
 
 const App = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -35,10 +37,11 @@ const App = () => {
     }, []);
 
     const isLoginPage = location.pathname === '/';
+    const isUserProfilePage = location.pathname === '/UserProfile';
 
     return (
         <div className="app">
-            {!isLoginPage && (
+            {!isLoginPage && !isUserProfilePage && (
                 <>
                     <NavbarComponent toggleSidebar={toggleSidebar} />
                     <SidebarComponent isOpen={isSidebarOpen} />
@@ -54,6 +57,8 @@ const App = () => {
                     <Route path="/rekap" element={<RekapPage />} />
                     <Route path="/TambahKaryawan" element={<TambahKaryawan />} />
                     <Route path="/EditKaryawan" element={<EditKaryawan />} />
+                    <Route path="/pengajuan" element={<PengajuanPage />} />
+                    <Route path="/UserProfile" element={<UserProfile />} /> {/* Tambahkan rute UserProfile */}
                 </Routes>
             </div>
         </div>

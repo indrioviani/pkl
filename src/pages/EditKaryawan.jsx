@@ -1,103 +1,77 @@
-import React, { useState } from 'react';
-import { Button, Form } from 'react-bootstrap';
-import Swal from 'sweetalert2'; // Import SweetAlert2
-import '../style/css/TambahKaryawan.css';
+import React, { useState, useEffect } from 'react';
+import axios from '../api/axios'; // Pastikan path ini benar
+import { Modal, Button, Form } from 'react-bootstrap';
 
-function EditKaryawan() {
-  const [formData, setFormData] = useState({
-    nama: '',
-    nomorHp: '',
-    email: '',
-    rfid: ''
-  });
+function EditKaryawan({ show, handleClose, karyawan }) {
+  const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
+  const [jabatan, setJabatan] = useState('');
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  useEffect(() => {
+  if (karyawan) {
+    console.log('Editing karyawan:', karyawan); // Tambahkan log ini
+    setNama(karyawan.nama);
+    setEmail(karyawan.email);
+    setJabatan(karyawan.jabatan);
+  }
+}, [karyawan]);
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Logika pengiriman data form
-    console.log('Form Data Submitted:', formData);
-    
-    // Simulasi logika pengiriman data ke server
-    const isSuccess = true; // Ubah sesuai dengan logika keberhasilan pengiriman data
+    const updatedKaryawan = { nama, email, jabatan };
 
-    if (isSuccess) {
-      Swal.fire({
-        title: 'Berhasil!',
-        text: 'Data karyawan berhasil ditambahkan.',
-        icon: 'success',
-        confirmButtonText: 'OK'
+    axios.put(`/api/user/${karyawan.id}`, updatedKaryawan)
+      .then((response) => {
+        alert('Karyawan berhasil diperbarui');
+        handleClose(updatedKaryawan); // Pass data karyawan yang diperbarui ke parent component
+      })
+      .catch((error) => {
+        console.log('error:', error.response.data);
+        alert(error.response.data.message);
       });
-    } else {
-      Swal.fire({
-        title: 'Gagal!',
-        text: 'Data karyawan gagal ditambahkan.',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
-    }
   };
 
   return (
-    <div className="karyawan-container">
-      <h1>Edit Karyawan</h1>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formNama">
-          <Form.Label>Nama</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Masukkan nama"
-            name="nama"
-            value={formData.nama}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="formNomorHp">
-          <Form.Label>Nomor HP</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Masukkan nomor HP"
-            name="nomorHp"
-            value={formData.nomorHp}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="formEmail">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="Masukkan email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="formRfid">
-          <Form.Label>RFID</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Masukkan RFID"
-            name="rfid"
-            value={formData.rfid}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Button variant="primary" type="submit" className="submit-button">
-          Submit
-        </Button>
-      </Form>
-    </div>
+    <Modal show={show} onHide={() => handleClose(null)} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Karyawan</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3" controlId="formNama">
+            <Form.Label>Nama</Form.Label>
+            <Form.Control 
+              type="text" 
+              value={nama} 
+              onChange={(e) => setNama(e.target.value)} 
+              required 
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formEmail">
+            <Form.Label>Email</Form.Label>
+            <Form.Control 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formJabatan">
+            <Form.Label>Jabatan</Form.Label>
+            <Form.Control 
+              type="text" 
+              value={jabatan} 
+              onChange={(e) => setJabatan(e.target.value)} 
+              required 
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            Simpan
+          </Button>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 }
 

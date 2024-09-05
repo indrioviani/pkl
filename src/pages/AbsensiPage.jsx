@@ -1,124 +1,154 @@
-import React, { useState } from 'react';
-import { Form, Table, Button, Pagination } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import axios from '../api/axios';
+import { Table, Pagination, Button, Form } from 'react-bootstrap';
+import Swal from 'sweetalert2';
 import '../style/css/Absensi.css';
 
-// Contoh data absensi
-const data = [
-  { id: 1, rfid: '123456789', name: 'John Doe', checkIn: '08:00', checkOut: '17:00', hasCheckedIn: true },
-  { id: 2, rfid: '987654321', name: 'Jane Smith', checkIn: '08:15', checkOut: '17:15', hasCheckedIn: true },
-  { id: 3, rfid: '987654322', name: 'Alice Johnson', checkIn: '', checkOut: '', hasCheckedIn: false },
-  { id: 4, rfid: '987654323', name: 'Bob Brown', checkIn: '', checkOut: '', hasCheckedIn: false },
-  // Tambahkan lebih banyak data jika perlu
-];
-
-const ITEMS_PER_PAGE = 10;
-
 function AbsensiPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [karyawan, setKaryawan] = useState([]);
+  const [absensi, setAbsensi] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showCheckedIn, setShowCheckedIn] = useState(true);
+  const [itemsPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState(''); // State untuk pencarian
+  const [filteredKaryawan, setFilteredKaryawan] = useState([]);
+
+  useEffect(() => {
+    // Ambil data karyawan dari API
+    axios.get('/api/user')
+      .then(response => {
+        setKaryawan(response.data);
+        setFilteredKaryawan(response.data); // Set filteredKaryawan saat data karyawan didapat
+      });
+
+    // Ambil data absensi dari API
+    axios.get('/api/absensi')
+      .then(response => {
+        setAbsensi(response.data);
+      });
+  }, []);
+
+  useEffect(() => {
+    // Filter karyawan berdasarkan searchTerm
+    setFilteredKaryawan(
+      karyawan.filter((item) =>
+        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+    setCurrentPage(1); // Reset halaman ke 1 setiap kali ada pencarian baru
+  }, [searchTerm, karyawan]);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset ke halaman pertama saat melakukan pencarian
   };
 
-  const handleSearch = () => {
-    setCurrentPage(1); // Reset ke halaman pertama saat melakukan pencarian
+  const handleAbsenMasuk = async (userId) => {
+    try {
+      const response = await axios.post('/api/absen-masuk', { user_id: userId });
+      setAbsensi([...absensi, response.data]);
+      Swal.fire(
+        'Berhasil',
+        'Absen masuk berhasil dicatat',
+        'success'
+      );
+    } catch (error) {
+      Swal.fire(
+        'Gagal!',
+        'Terjadi kesalahan saat mencatat absen masuk.',
+        'error'
+      );
+    }
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handleAbsenPulang = async (userId) => {
+    try {
+      const response = await axios.post('/api/absen-pulang', { user_id: userId });
+      const updatedAbsensi = absensi.map((item) =>
+        item.id === response.data.id ? response.data : item
+      );
+      setAbsensi(updatedAbsensi);
+      Swal.fire(
+        'Berhasil',
+        'Absen pulang berhasil dicatat',
+        'success'
+      );
+    } catch (error) {
+      Swal.fire(
+        'Gagal!',
+        'Terjadi kesalahan saat mencatat absen pulang.',
+        'error'
+      );
+    }
   };
 
-  const handleShowCheckedIn = () => {
-    setShowCheckedIn(true);
-    setCurrentPage(1); // Reset ke halaman pertama saat berpindah tampilan
-  };
+  // Pagination logic
+  const totalPages = Math.ceil(filteredKaryawan.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredKaryawan.slice(indexOfFirstItem, indexOfLastItem);
 
-  const handleShowNotCheckedIn = () => {
-    setShowCheckedIn(false);
-    setCurrentPage(1); // Reset ke halaman pertama saat berpindah tampilan
-  };
-
-  const filteredData = data.filter(row =>
-    row.id.toString().includes(searchTerm) ||
-    row.rfid.includes(searchTerm) ||
-    row.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const displayedData = filteredData.filter(row => row.hasCheckedIn === showCheckedIn);
-
-  const totalPages = Math.ceil(displayedData.length / ITEMS_PER_PAGE);
-  const currentData = displayedData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="absensi-page">
-      <h1>Absensi Karyawan</h1>
-      <div className="filter-container">
-        <Button
-          variant={showCheckedIn ? 'primary' : 'light'}
-          onClick={handleShowCheckedIn}
-          className="filter-button"
-        >
-          Sudah Absen
-        </Button>
-        <Button
-          variant={!showCheckedIn ? 'primary' : 'light'}
-          onClick={handleShowNotCheckedIn}
-          className="filter-button"
-        >
-          Belum Absen
-        </Button>
-      </div>
-      <div className="search-container">
-        <Form.Control
-          type="text"
-          placeholder="Search by ID, RFID, or Name..."
-          className="search-input"
-          value={searchTerm}
-          onChange={handleSearchChange}
-        />
-        <Button className="search-button" onClick={handleSearch}>Search</Button>
+    <div className='absensi-page'>
+      <div className="header">
+        <h1>Absensi Karyawan</h1>
+        <div className='controls'>
+          <Form.Control
+            type="text"
+            placeholder="Search by name..."
+            className="search-input"
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          
+        </div>
       </div>
       <Table striped bordered hover className="absensi-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>RFID</th>
             <th>Nama</th>
-            <th>Waktu Masuk</th>
-            <th>Waktu Keluar</th>
+            <th>Tanggal</th>
+            <th>Jam Masuk</th>
+            <th>Jam Pulang</th>
           </tr>
         </thead>
         <tbody>
-          {currentData.length > 0 ? (
-            currentData.map((row) => (
-              <tr key={row.id}>
-                <td>{row.id}</td>
-                <td>{row.rfid}</td>
-                <td>{row.name}</td>
-                <td>{row.checkIn}</td>
-                <td>{row.checkOut}</td>
+          {currentItems.map((karyawan) => {
+            const karyawanAbsensi = absensi.find(item => item.user_id === karyawan.id);
+            return (
+              <tr key={karyawan.id}>
+                <td>{karyawan.id}</td>
+                <td>{karyawan.nama}</td>
+                <td>
+                  {karyawanAbsensi ? 
+                    new Date(karyawanAbsensi.jam_masuk).toLocaleDateString() : '-'}
+                </td>
+                <td>
+                  {karyawanAbsensi ? 
+                    new Date(karyawanAbsensi.jam_masuk).toLocaleTimeString() : '-'}
+                </td>
+                <td>
+                  {karyawanAbsensi ? 
+                    new Date(karyawanAbsensi.jam_pulang).toLocaleTimeString() : '-'}
+                </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5">No data available</td>
-            </tr>
-          )}
+            );
+          })}
         </tbody>
       </Table>
-      <Pagination className="pagination12">
-        {Array.from({ length: totalPages }, (_, index) => (
+      <Pagination className="pagination-container">
+        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+        {[...Array(totalPages).keys()].map((number) => (
           <Pagination.Item
-            key={index + 1}
-            active={index + 1 === currentPage}
-            onClick={() => handlePageChange(index + 1)}
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => paginate(number + 1)}
           >
-            {index + 1}
+            {number + 1}
           </Pagination.Item>
         ))}
+        <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
       </Pagination>
     </div>
   );

@@ -1,0 +1,101 @@
+.pengajuan-page {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    margin-left: 270px;
+    margin-top: 80px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.pengajuan-page h2 {
+    margin-bottom: 20px;
+}
+
+.table-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-input {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.pengajuan-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.pengajuan-table th, .pengajuan-table td {
+    padding: 10px ;
+    text-align: left;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.pengajuan-table th {
+    background-color: #f4f4f4;
+}
+
+.approve-button {
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 10px;
+
+    cursor: pointer;
+}
+
+.reject-button {
+    background-color: #dc3545;
+    color: white;
+    border-radius: 5px;
+    justify-content: center;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .pengajuan-page {
+        margin-left: 0px;
+        margin-right: 0px;
+        padding: 15px;
+    }
+
+    .pengajuan-table {
+        font-size: 0.8rem;
+    }
+
+    .pengajuan-table th, .pengajuan-table td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pengajuan-page {
+        padding: 10px;
+    }
+
+    .pengajuan-table {
+        font-size: 0.7rem;
+    }
+
+    .pengajuan-table th, .pengajuan-table td {
+        padding: 6px;
+    }
+    .approve-button{
+        margin-bottom: 10px;
+    }
+}

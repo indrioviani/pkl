@@ -1,26 +1,69 @@
-import React, { useState } from 'react';
-import { Button, Form, Table, Pagination } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import axios from '../api/axios';
+import { Table, Button, Form, Pagination } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import TambahKaryawan from './TambahKaryawan';
+import EditKaryawan from './EditKaryawan';
+
 import '../style/css/Karyawan.css';
 
 function KaryawanPage() {
+  const [karyawan, setKaryawan] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [currentKaryawan, setCurrentKaryawan] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filteredKaryawan, setFilteredKaryawan] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const navigate = useNavigate();
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
+  useEffect(() => {
+    // Ambil data karyawan dari API
+    axios.get('/api/user')
+      .then(response => {
+        setKaryawan(response.data);
+        setFilteredKaryawan(response.data); // Set filteredKaryawan saat data karyawan didapat
+      });
+  }, []);
+
+  useEffect(() => {
+    // Filter karyawan berdasarkan searchTerm
+    setFilteredKaryawan(
+      karyawan.filter((item) =>
+        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+    setCurrentPage(1); // Reset halaman ke 1 setiap kali ada pencarian baru
+  }, [searchTerm, karyawan]);
 
   const handleAddKaryawan = () => {
-    navigate('/TambahKaryawan');
+    setShowAddModal(true);
   };
 
-  const handleEdit = (id) => {
-    navigate(`/EditKaryawan/${id}`);
+  const handleCloseAddModal = (newKaryawan) => {
+    setShowAddModal(false);
+    if (newKaryawan) {
+      setKaryawan([...karyawan, newKaryawan]);
+    }
+  };
+
+  const handleEdit = (karyawan) => {
+    setCurrentKaryawan(karyawan);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = (updateKaryawan) => {
+    setShowEditModal(false);
+    if (updateKaryawan) {
+      const updatedKaryawans = karyawan.map((karyawan) => {
+        if (karyawan.id === updateKaryawan.id) {
+          return updateKaryawan;
+        }
+        return karyawan;
+      });
+      setKaryawan(updatedKaryawans);
+    }
   };
 
   const handleDelete = (id) => {
@@ -33,82 +76,86 @@ function KaryawanPage() {
       cancelButtonColor: '#d33',
       confirmButtonText: 'Ya, hapus!',
       cancelButtonText: 'Batal'
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        console.log(`Hapus karyawan dengan ID: ${id}`);
-        Swal.fire(
-          'Terhapus!',
-          'Data karyawan telah dihapus.',
-          'success'
-        );
+        try {
+          await axios.delete(`/api/user/${id}`);
+          setKaryawan(karyawan.filter(k => k.id !== id));
+          Swal.fire(
+            'Data berhasil dihapus',
+            'Data karyawan berhasil dihapus',
+            'success'
+          );
+        } catch (error) {
+          Swal.fire(
+            'Gagal!',
+            'Terjadi kesalahan saat menghapus karyawan.',
+            'error'
+          );
+        }
       }
     });
   };
 
-  const karyawanData = [
-    { id: 1, name: 'John Doe', rfid: '123456789', email: 'john@example.com' },
-    { id: 2, name: 'Jane Doe', rfid: '987654321', email: 'jane@example.com' },
-    { id: 3, name: 'Jack Smith', rfid: '123123123', email: 'jack@example.com' },
-    { id: 4, name: 'Jill Johnson', rfid: '321321321', email: 'jill@example.com' },
-    { id: 5, name: 'Joe Brown', rfid: '456456456', email: 'joe@example.com' },
-    { id: 6, name: 'Jake White', rfid: '654654654', email: 'jake@example.com' },
-    // Tambahkan data lainnya sesuai kebutuhan
-  ];
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
 
-  const filteredData = karyawanData.filter(
-    (karyawan) =>
-      karyawan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      karyawan.rfid.includes(searchTerm) ||
-      karyawan.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  // Pagination logic
+  const totalPages = Math.ceil(filteredKaryawan.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentItems = filteredKaryawan.slice(indexOfFirstItem, indexOfLastItem);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="karyawan-page">
+    <div className='karyawan-page'>
       <div className="header">
         <h1>Daftar Karyawan</h1>
-        <Button variant="primary" className="add-button" onClick={handleAddKaryawan}>
-          <FaPlus /> Tambah Karyawan
-        </Button>
-      </div>
-      <div className="filter-container">
-        <Form.Control
-          type="text"
-          placeholder="Search..."
-          className="search-input"
-          value={searchTerm}
-          onChange={handleSearchChange}
-        />
+        <div className="controls">
+          <Form.Control
+            type="text"
+            placeholder="Search by name..."
+            className="search-input"
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          <Button
+            variant="primary"
+            className='add-button'
+            onClick={handleAddKaryawan}>
+            <FaPlus /> Tambah Karyawan
+          </Button>
+        </div>
       </div>
       <Table striped bordered hover className="karyawan-table">
         <thead>
           <tr>
             <th>ID</th>
             <th>Nama</th>
-            <th>RFID</th>
             <th>Email</th>
-            <th>Status</th>
+            <th>Jabatan</th>
+            <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           {currentItems.map((karyawan) => (
             <tr key={karyawan.id}>
               <td>{karyawan.id}</td>
-              <td>{karyawan.name}</td>
-              <td>{karyawan.rfid}</td>
+              <td>{karyawan.nama}</td>
               <td>{karyawan.email}</td>
+              <td>{karyawan.jabatan}</td>
               <td>
-                <Button variant="warning" onClick={() => handleEdit(karyawan.id)} className="me-2">
+                <Button
+                  variant="warning"
+                  className="me-2"
+                  onClick={() => handleEdit(karyawan)}>
                   <FaEdit />
                 </Button>
-                <Button variant="danger" onClick={() => handleDelete(karyawan.id)}>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDelete(karyawan.id)}>
                   <FaTrash />
                 </Button>
               </td>
@@ -116,16 +163,23 @@ function KaryawanPage() {
           ))}
         </tbody>
       </Table>
+
       <Pagination className="pagination-container">
         <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
         {[...Array(totalPages).keys()].map((number) => (
-          <Pagination.Item key={number + 1} active={number + 1 === currentPage} onClick={() => paginate(number + 1)}>
+          <Pagination.Item
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => paginate(number + 1)}
+          >
             {number + 1}
           </Pagination.Item>
         ))}
         <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} />
-       
       </Pagination>
+
+      <TambahKaryawan show={showAddModal} handleClose={handleCloseAddModal} />
+      <EditKaryawan show={showEditModal} handleClose={handleCloseEditModal} karyawan={currentKaryawan} />
     </div>
   );
 }

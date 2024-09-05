@@ -24,6 +24,7 @@ body {
     margin-left: 850px; /* to push content beside the sidebar */
     padding: 20px 0px 0px 270px;
     transition: 0.3s ease;
+    background-color: black;
 }
 
 .sidebar.closed + .main-content {
@@ -39,6 +40,7 @@ body {
 /* Dashboard Container */
 .dashboard-container {
     padding: 20px 10px 0px 260px;
+    
 }
 
 .dashboard-container h1 {
@@ -72,7 +74,7 @@ body {
 }
 .box-icon {
     font-size: 1.5rem; /* Ukuran ikon */
-    color: #007bff; /* Warna ikon */
+    color: #5b8d54; /* Warna ikon */
     margin-bottom: 10px;
     justify-content: left;
 }
@@ -123,7 +125,7 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .action-button {
-    background-color: #007bff;
+    background-color: #959595;
     color: #fff;
     border: none;
     padding: 5px 10px;

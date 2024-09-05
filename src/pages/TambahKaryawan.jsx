@@ -1,104 +1,82 @@
 import React, { useState } from 'react';
-import { Button, Form } from 'react-bootstrap';
-import Swal from 'sweetalert2'; // Import SweetAlert2
-import '../style/css/TambahKaryawan.css';
+import axios from '../api/axios'
 
-function TambahKaryawanPage() {
-  const [formData, setFormData] = useState({
-    nama: '',
-    nomorHp: '',
-    email: '',
-    rfid: ''
-  });
+import { Modal, Button, Form } from 'react-bootstrap';
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+function TambahKaryawan({ show, handleClose }) {
+  const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
+  const [jabatan, setJabatan] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Logika pengiriman data form
-    console.log('Form Data Submitted:', formData);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.post('/api/user', { nama,email,jabatan,role,password })
+    .then((response) => {
+      handleClose();
+      alert('Karyawan berhasil ditambahkan');
+    }).catch((error) => {
+      console.log('error:', error.response.data);
+      alert(error.response.data.message);
+    });
+
     
-    // Simulasi logika pengiriman data ke server
-    const isSuccess = true; // Ubah sesuai dengan logika keberhasilan pengiriman data
-
-    if (isSuccess) {
-      Swal.fire({
-        title: 'Berhasil!',
-        text: 'Data karyawan berhasil ditambahkan.',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      });
-    } else {
-      Swal.fire({
-        title: 'Gagal!',
-        text: 'Data karyawan gagal ditambahkan.',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
-    }
-  };
+  }; 
 
   return (
-    <div className="karyawan-container">
-      <h1>Tambah Karyawan</h1>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formNama">
-          <Form.Label>Nama</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Masukkan nama"
-            name="nama"
-            value={formData.nama}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="formNomorHp">
-          <Form.Label>Nomor HP</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Masukkan nomor HP"
-            name="nomorHp"
-            value={formData.nomorHp}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="formEmail">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="Masukkan email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="formRfid">
-          <Form.Label>RFID</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Masukkan RFID"
-            name="rfid"
-            value={formData.rfid}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Button variant="primary" type="submit" className="submit-button">
-          Submit
-        </Button>
-      </Form>
-    </div>
+    <Modal show={show} onHide={() => handleClose(null)} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Tambah Karyawan</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3" controlId="formNama">
+            <Form.Label>Nama</Form.Label>
+            <Form.Control 
+                type="text" 
+                value={nama} 
+                onChange={(e) => setNama(e.target.value)} 
+                required />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formEmail">
+            <Form.Label>Email</Form.Label>
+            <Form.Control 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formJabatan">
+            <Form.Label>Jabatan</Form.Label>
+            <Form.Control 
+                type="text" 
+                value={jabatan} 
+                onChange={(e) => setJabatan(e.target.value)} 
+                required />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formRolw">
+            <Form.Label>Role</Form.Label>
+            <Form.Control 
+                type="text" 
+                value={role} 
+                onChange={(e) => setRole(e.target.value)} 
+                required />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formPassword">
+            <Form.Label>Password</Form.Label>
+            <Form.Control 
+                type="password" 
+                value={password} onChange={(e) => setPassword(e.target.value)} 
+                required />
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            Tambah
+          </Button>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 }
 
-export default TambahKaryawanPage;
+export default TambahKaryawan;

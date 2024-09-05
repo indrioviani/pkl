@@ -19,6 +19,7 @@
 
 .header h1 {
   margin: 0;
+  
 }
 
 .add-button {
@@ -98,7 +99,7 @@
   }
 
   .karyawan-table {
-    font-size: 0.9rem; /* Sesuaikan ukuran font untuk tabel */
+    font-size: 0.7rem; /* Sesuaikan ukuran font untuk tabel */
   }
 
   .karyawan-table th, .karyawan-table td {
@@ -112,7 +113,7 @@
   }
 
   .header h1 {
-    font-size: .5rem; /* Sesuaikan ukuran font untuk layar sangat kecil */
+    font-size: .8rem; /* Sesuaikan ukuran font untuk layar sangat kecil */
   }
 
   .add-button {
@@ -132,7 +133,8 @@
   }
 
   .karyawan-table th, .karyawan-table td {
-    padding: 6px; /* Kurangi padding lebih lanjut pada sel tabel */
+    padding: 3px; /* Kurangi padding lebih lanjut pada sel tabel */
+    width: 50px;
   }
   .pagination-container {
     margin-top: 10px;
